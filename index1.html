@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>German Vocabulary Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base font for the entire body */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Styling for the main content cards */
+        .card {
+            background-color: white;
+            border-radius: 1.5rem; /* Rounded corners for cards */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Soft shadow */
+            transition: transform 0.3s ease; /* Smooth transition for hover effect */
+        }
+        .card:hover {
+            transform: translateY(-5px); /* Slight lift on hover */
+        }
+        /* Styling for general buttons */
+        .btn {
+            transition: all 0.3s ease; /* Smooth transitions for button effects */
+        }
+        .btn:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow on hover */
+        }
+        /* Specific styling for correct answer option button */
+        .option-btn.correct {
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            border-color: #16a34a; /* green-600 */
+        }
+        /* Specific styling for incorrect answer option button */
+        .option-btn.incorrect {
+            background-color: #ef4444; /* red-500 */
+            color: white;
+            border-color: #dc2626; /* red-600 */
+        }
+        /* Custom scrollbar for vocabulary list for better aesthetics */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 8px; /* Width of the scrollbar */
+        }
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f5f9; /* Light gray track background */
+            border-radius: 10px; /* Rounded track corners */
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* Medium gray thumb color */
+            border-radius: 10px; /* Rounded thumb corners */
+        }
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* Darker gray thumb on hover */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="max-w-2xl w-full mx-auto">
+        <!-- Main Menu View -->
+        <div id="main-menu" class="card p-8 text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Deutsch Lernen</h1>
+            <p class="text-lg text-gray-600 mb-8">A1 Vocabulary Trainer</p>
+            <div class="space-y-4">
+                <button onclick="showVocabulary()" class="btn w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg">
+                    Learn Vocabulary
+                </button>
+                <button onclick="startQuiz()" class="btn w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg">
+                    Start Quiz
+                </button>
+            </div>
+        </div>
+
+        <!-- Vocabulary List View -->
+        <div id="vocabulary-view" class="hidden">
+            <div class="card p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">A1 Vocabulary</h2>
+                    <button onclick="showMenu()" class="btn bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">
+                        Back
+                    </button>
+                </div>
+                <!-- Scrollable container for the vocabulary table -->
+                <div class="h-96 overflow-y-auto pr-4">
+                    <table class="w-full text-left">
+                        <thead class="sticky top-0 bg-white shadow-sm">
+                            <tr>
+                                <th class="py-3 px-4 text-lg font-semibold text-gray-700">German</th>
+                                <th class="py-3 px-4 text-lg font-semibold text-gray-700">English</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vocabulary-list" class="divide-y divide-gray-200">
+                            <!-- Vocabulary items will be dynamically injected here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz View -->
+        <div id="quiz-view" class="hidden">
+             <div class="card p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-900">Quiz Mode</h2>
+                     <div class="text-right">
+                        <p class="text-lg text-gray-600">Score: <span id="score" class="font-bold">0</span></p>
+                        <p class="text-lg text-gray-600">Question: <span id="question-counter" class="font-bold">1</span> / <span id="total-questions"></span></p>
+                    </div>
+                </div>
+
+                <!-- Display area for the German word to be translated -->
+                <div class="text-center my-12 min-h-[64px] flex items-center justify-center">
+                    <p class="text-5xl font-bold text-blue-600" id="quiz-word"></p>
+                </div>
+
+                <!-- Container for answer options -->
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options will be dynamically injected here by JavaScript -->
+                </div>
+                <div class="mt-8 text-center">
+                    <!-- Next Question Button - initially hidden -->
+                    <button id="next-question-btn" class="hidden btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg" onclick="nextQuestion()">
+                        Next Question
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score View -->
+        <div id="score-view" class="hidden">
+            <div class="card p-8 text-center">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Quiz Complete!</h2>
+                <p class="text-2xl text-gray-700 mb-2">Your Final Score is</p>
+                <p class="text-6xl font-bold text-green-500 mb-8" id="final-score"></p>
+                <div class="space-y-4">
+                    <button onclick="startQuiz()" class="btn w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg">
+                        Play Again
+                    </button>
+                    <button onclick="showMenu()" class="btn w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg">
+                        Main Menu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Comprehensive A1 Vocabulary List (approximately 1000 words) ---
+        // This list contains German words and their English translations.
+        // It's designed to be extensive for a good A1 level vocabulary trainer.
+        const vocabulary = [
+            // Greetings & Farewells
+            { german: 'hallo', english: 'hello' },
+            { german: 'guten Morgen', english: 'good morning' },
+            { german: 'guten Tag', english: 'good day' },
+            { german: 'guten Abend', english: 'good evening' },
+            { german: 'gute Nacht', english: 'good night' },
+            { german: 'auf Wiedersehen', english: 'goodbye (formal)' },
+            { german: 'Tschüss', english: 'bye (informal)' },
+            { german: 'bis bald', english: 'see you soon' },
+            { german: 'bis später', english: 'see you later' },
+            { german: 'wie geht es Ihnen?', english: 'how are you? (formal)' },
+            { german: 'wie geht\'s?', english: 'how are you? (informal)' },
+            { german: 'mir geht es gut', english: 'I am fine' },
+            { german: 'sehr gut', english: 'very good' },
+            { german: 'nicht so gut', english: 'not so good' },
+            { german: 'es geht', english: 'it\'s okay' },
+
+            // Politeness
+            { german: 'danke', english: 'thank you' },
+            { german: 'vielen Dank', english: 'many thanks' },
+            { german: 'bitte', english: 'please / you\'re welcome' },
+            { german: 'bitte schön', english: 'you\'re welcome' },
+            { german: 'Entschuldigung', english: 'excuse me / sorry' },
+            { german: 'es tut mir leid', english: 'I am sorry' },
+            { german: 'kein Problem', english: 'no problem' },
+
+            // Basic Words & Phrases
+            { german: 'ja', english: 'yes' },
+            { german: 'nein', english: 'no' },
+            { german: 'und', english: 'and' },
+            { german: 'oder', english: 'or' },
+            { german: 'aber', english: 'but' },
+            { german: 'nicht', english: 'not' },
+            { german: 'sehr', english: 'very' },
+            { german: 'auch', english: 'also' },
+            { german: 'hier', english: 'here' },
+            { german: 'dort', english: 'there' },
+            { german: 'jetzt', english: 'now' },
+            { german: 'später', english: 'later' },
+            { german: 'immer', english: 'always' },
+            { german: 'nie', english: 'never' },
+            { german: 'oft', english: 'often' },
+            { german: 'manchmal', english: 'sometimes' },
+            { german: 'bald', english: 'soon' },
+            { german: 'gleich', english: 'immediately / in a moment' },
+            { german: 'schon', english: 'already' },
+            { german: 'noch', english: 'still / yet' },
+            { german: 'nur', english: 'only' },
+            { german: 'alle', english: 'all' },
+            { german: 'alles', english: 'everything' },
+            { german: 'nichts', english: 'nothing' },
+            { german: 'etwas', english: 'something' },
+            { german: 'jemand', english: 'someone' },
+            { german: 'niemand', english: 'no one' },
+            { german: 'viel', english: 'much / a lot' },
+            { german: 'wenig', english: 'little' },
+            { german: 'mehr', english: 'more' },
+            { german: 'weniger', english: 'less' },
+            { german: 'gut', english: 'good' },
+            { german: 'schlecht', english: 'bad' },
+            { german: 'neu', english: 'new' },
+            { german: 'alt', english: 'old' },
+            { german: 'groß', english: 'big / tall' },
+            { german: 'klein', english: 'small' },
+            { german: 'schön', english: 'beautiful / nice' },
+            { german: 'hässlich', english: 'ugly' },
+            { german: 'schnell', english: 'fast' },
+            { german: 'langsam', english: 'slow' },
+            { german: 'heiß', english: 'hot' },
+            { german: 'kalt', english: 'cold' },
+            { german: 'warm', english: 'warm' },
+            { german: 'richtig', english: 'correct / right' },
+            { german: 'falsch', english: 'wrong' },
+            { german: 'fertig', english: 'ready / finished' },
+            { german: 'wichtig', english: 'important' },
+            { german: 'interessant', english: 'interesting' },
+            { german: 'langweilig', english: 'boring' },
+            { german: 'einfach', english: 'easy / simple' },
+            { german: 'schwierig', english: 'difficult' },
+            { german: 'glücklich', english: 'happy' },
+            { german: 'traurig', english: 'sad' },
+            { german: 'müde', english: 'tired' },
+            { german: 'krank', english: 'sick' },
+            { german: 'gesund', english: 'healthy' },
+            { german: 'frei', english: 'free' },
+            { german: 'besetzt', english: 'occupied' },
+            { german: 'offen', english: 'open' },
+            { german: 'geschlossen', english: 'closed' },
+
+            // Pronouns
+            { german: 'ich', english: 'I' },
+            { german: 'du', english: 'you (informal singular)' },
+            { german: 'er', english: 'he' },
+            { german: 'sie', english: 'she / they' },
+            { german: 'es', english: 'it' },
+            { german: 'wir', english: 'we' },
+            { german: 'ihr', english: 'you (informal plural)' },
+            { german: 'Sie', english: 'you (formal singular/plural)' },
+            { german: 'mein', english: 'my' },
+            { german: 'dein', english: 'your (informal singular)' },
+            { german: 'sein', english: 'his / its' },
+            { german: 'ihr', english: 'her / their' },
+            { german: 'unser', english: 'our' },
+            { german: 'euer', english: 'your (informal plural)' },
+            { german: 'Ihr', english: 'your (formal)' },
+            { german: 'mich', english: 'me (accusative)' },
+            { german: 'dich', english: 'you (accusative informal singular)' },
+            { german: 'ihn', english: 'him (accusative)' },
+            { german: 'sie', english: 'her / them (accusative)' },
+            { german: 'uns', english: 'us (accusative/dative)' },
+            { german: 'euch', english: 'you (accusative/dative informal plural)' },
+            { german: 'Ihnen', english: 'you (dative formal)' },
+            { german: 'mir', english: 'me (dative)' },
+            { german: 'dir', english: 'you (dative informal singular)' },
+            { german: 'ihm', english: 'him / it (dative)' },
+
+            // Question Words
+            { german: 'wer', english: 'who' },
+            { german: 'was', english: 'what' },
+            { german: 'wann', english: 'when' },
+            { german: 'wo', english: 'where' },
+            { german: 'warum', english: 'why' },
+            { german: 'wie', english: 'how' },
+            { german: 'woher', english: 'from where' },
+            { german: 'wohin', english: 'to where' },
+            { german: 'welche?', english: 'which?' },
+            { german: 'wieviel?', english: 'how much?' },
+            { german: 'wie viele?', english: 'how many?' },
+
+            // Nouns (with articles) - People & Family
+            { german: 'der Mann', english: 'the man / husband' },
+            { german: 'die Frau', english: 'the woman / wife' },
+            { german: 'das Kind', english: 'the child' },
+            { german: 'die Familie', english: 'the family' },
+            { german: 'der Vater', english: 'the father' },
+            { german: 'die Mutter', english: 'the mother' },
+            { german: 'der Sohn', english: 'the son' },
+            { german: 'die Tochter', english: 'the daughter' },
+            { german: 'der Bruder', english: 'the brother' },
+            { german: 'die Schwester', english: 'the sister' },
+            { german: 'die Eltern (Pl.)', english: 'the parents' },
+            { german: 'die Geschwister (Pl.)', english: 'the siblings' },
+            { german: 'der Großvater', english: 'the grandfather' },
+            { german: 'die Großmutter', english: 'the grandmother' },
+            { german: 'die Großeltern (Pl.)', english: 'the grandparents' },
+            { german: 'der Freund', english: 'the friend (male) / boyfriend' },
+            { german: 'die Freundin', english: 'the friend (female) / girlfriend' },
+            { german: 'die Leute (Pl.)', english: 'the people' },
+            { german: 'der Herr', english: 'Mr. / gentleman' },
+            { german: 'die Dame', english: 'Ms. / lady' },
+            { german: 'der Name', english: 'the name' },
+            { german: 'der Beruf', english: 'the profession' },
+            { german: 'der Student', english: 'the student (male)' },
+            { german: 'die Studentin', english: 'the student (female)' },
+            { german: 'der Lehrer', english: 'the teacher (male)' },
+            { german: 'die Lehrerin', english: 'the teacher (female)' },
+            { german: 'der Arzt', english: 'the doctor (male)' },
+            { german: 'die Ärztin', english: 'the doctor (female)' },
+            { german: 'der Ingenieur', english: 'the engineer (male)' },
+            { german: 'die Ingenieurin', english: 'the engineer (female)' },
+            { german: 'der Verkäufer', english: 'the salesperson (male)' },
+            { german: 'die Verkäuferin', english: 'the salesperson (female)' },
+
+            // Nouns (with articles) - Food & Drink
+            { german: 'das Essen', english: 'the food' },
+            { german: 'das Frühstück', english: 'the breakfast' },
+            { german: 'das Mittagessen', english: 'the lunch' },
+            { german: 'das Abendessen', english: 'the dinner' },
+            { german: 'das Wasser', english: 'the water' },
+            { german: 'der Kaffee', english: 'the coffee' },
+            { german: 'der Tee', english: 'the tea' },
+            { german: 'die Milch', english: 'the milk' },
+            { german: 'der Saft', english: 'the juice' },
+            { german: 'das Bier', english: 'the beer' },
+            { german: 'der Wein', english: 'the wine' },
+            { german: 'das Brot', english: 'the bread' },
+            { german: 'das Brötchen', english: 'the bread roll' },
+            { german: 'der Käse', english: 'the cheese' },
+            { german: 'die Wurst', english: 'the sausage' },
+            { german: 'der Schinken', english: 'the ham' },
+            { german: 'das Ei', english: 'the egg' },
+            { german: 'die Butter', english: 'the butter' },
+            { german: 'die Marmelade', english: 'the jam' },
+            { german: 'der Honig', english: 'the honey' },
+            { german: 'der Zucker', english: 'the sugar' },
+            { german: 'das Salz', english: 'the salt' },
+            { german: 'der Pfeffer', english: 'the pepper' },
+            { german: 'das Obst', english: 'the fruit' },
+            { german: 'der Apfel', english: 'the apple' },
+            { german: 'die Banane', english: 'the banana' },
+            { german: 'die Orange', english: 'the orange' },
+            { german: 'die Zitrone', english: 'the lemon' },
+            { german: 'die Traube', english: 'the grape' },
+            { german: 'das Gemüse', english: 'the vegetables' },
+            { german: 'die Kartoffel', english: 'the potato' },
+            { german: 'die Tomate', english: 'the tomato' },
+            { german: 'die Zwiebel', english: 'the onion' },
+            { german: 'der Salat', english: 'the salad' },
+            { german: 'das Fleisch', english: 'the meat' },
+            { german: 'der Fisch', english: 'the fish' },
+            { german: 'das Hähnchen', english: 'the chicken' },
+            { german: 'der Reis', english: 'the rice' },
+            { german: 'die Nudeln (Pl.)', english: 'the pasta' },
+            { german: 'die Suppe', english: 'the soup' },
+            { german: 'der Kuchen', english: 'the cake' },
+            { german: 'das Eis', english: 'the ice cream' },
+            { german: 'die Rechnung', english: 'the bill / check' },
+            { german: 'das Restaurant', english: 'the restaurant' },
+            { german: 'der Supermarkt', english: 'the supermarket' },
+
+            // Nouns (with articles) - Places & Things
+            { german: 'das Haus', english: 'the house' },
+            { german: 'die Wohnung', english: 'the apartment' },
+            { german: 'das Zimmer', english: 'the room' },
+            { german: 'das Schlafzimmer', english: 'the bedroom' },
+            { german: 'das Wohnzimmer', english: 'the living room' },
+            { german: 'die Küche', english: 'the kitchen' },
+            { german: 'das Badezimmer', english: 'the bathroom' },
+            { german: 'der Garten', english: 'the garden' },
+            { german: 'der Balkon', english: 'the balcony' },
+            { german: 'die Tür', english: 'the door' },
+            { german: 'das Fenster', english: 'the window' },
+            { german: 'der Tisch', english: 'the table' },
+            { german: 'der Stuhl', english: 'the chair' },
+            { german: 'das Bett', english: 'the bed' },
+            { german: 'der Schrank', english: 'the cupboard / wardrobe' },
+            { german: 'das Sofa', english: 'the sofa' },
+            { german: 'die Lampe', english: 'the lamp' },
+            { german: 'der Teppich', english: 'the carpet' },
+            { german: 'das Bild', english: 'the picture' },
+            { german: 'die Uhr', english: 'the clock / watch' },
+            { german: 'das Telefon', english: 'the telephone' },
+            { german: 'der Computer', english: 'the computer' },
+            { german: 'das Handy', english: 'the mobile phone' },
+            { german: 'das Buch', english: 'the book' },
+            { german: 'die Zeitung', english: 'the newspaper' },
+            { german: 'die Zeitschrift', english: 'the magazine' },
+            { german: 'der Stift', english: 'the pen' },
+            { german: 'das Papier', english: 'the paper' },
+            { german: 'die Brille', english: 'the glasses' },
+            { german: 'die Tasche', english: 'the bag / pocket' },
+            { german: 'der Schlüssel', english: 'the key' },
+            { german: 'das Geld', english: 'the money' },
+            { german: 'die Karte', english: 'the card / map' },
+            { german: 'das Ticket', english: 'the ticket' },
+            { german: 'das Auto', english: 'the car' },
+            { german: 'das Fahrrad', english: 'the bicycle' },
+            { german: 'der Zug', english: 'the train' },
+            { german: 'der Bus', english: 'the bus' },
+            { german: 'die Straßenbahn', english: 'the tram' },
+            { german: 'das Flugzeug', english: 'the airplane' },
+            { german: 'der Flughafen', english: 'the airport' },
+            { german: 'der Bahnhof', english: 'the train station' },
+            { german: 'die Bushaltestelle', english: 'the bus stop' },
+            { german: 'die Stadt', english: 'the city' },
+            { german: 'das Land', english: 'the country / land' },
+            { german: 'das Dorf', english: 'the village' },
+            { german: 'die Straße', english: 'the street' },
+            { german: 'der Platz', english: 'the square / place' },
+            { german: 'der Park', english: 'the park' },
+            { german: 'der Baum', english: 'the tree' },
+            { german: 'die Blume', english: 'the flower' },
+            { german: 'das Tier', english: 'the animal' },
+            { german: 'der Hund', english: 'the dog' },
+            { german: 'die Katze', english: 'the cat' },
+            { german: 'der Vogel', english: 'the bird' },
+            { german: 'der Fisch', english: 'the fish' },
+            { german: 'die Schule', english: 'the school' },
+            { german: 'die Universität', english: 'the university' },
+            { german: 'die Arbeit', english: 'the work / job' },
+            { german: 'das Büro', english: 'the office' },
+            { german: 'die Bank', english: 'the bank' },
+            { german: 'die Post', english: 'the post office' },
+            { german: 'das Krankenhaus', english: 'the hospital' },
+            { german: 'die Apotheke', english: 'the pharmacy' },
+            { german: 'der Bahnhof', english: 'the train station' },
+            { german: 'der Markt', english: 'the market' },
+            { german: 'das Geschäft', english: 'the shop / business' },
+            { german: 'das Museum', english: 'the museum' },
+            { german: 'das Kino', english: 'the cinema' },
+            { german: 'das Theater', english: 'the theater' },
+            { german: 'das Schwimmbad', english: 'the swimming pool' },
+            { german: 'der Sport', english: 'the sport' },
+            { german: 'die Musik', english: 'the music' },
+            { german: 'das Hobby', english: 'the hobby' },
+            { german: 'die Zeit', english: 'the time' },
+            { german: 'der Tag', english: 'the day' },
+            { german: 'die Woche', english: 'the week' },
+            { german: 'der Monat', english: 'the month' },
+            { german: 'das Jahr', english: 'the year' },
+            { german: 'heute', english: 'today' },
+            { german: 'morgen', english: 'tomorrow' },
+            { german: 'gestern', english: 'yesterday' },
+            { german: 'der Morgen', english: 'the morning' },
+            { german: 'der Mittag', english: 'the midday' },
+            { german: 'der Nachmittag', english: 'the afternoon' },
+            { german: 'der Abend', english: 'the evening' },
+            { german: 'die Nacht', english: 'the night' },
+            { german: 'der Frühling', english: 'the spring' },
+            { german: 'der Sommer', english: 'the summer' },
+            { german: 'der Herbst', english: 'the autumn' },
+            { german: 'der Winter', english: 'the winter' },
+            { german: 'das Wetter', english: 'the weather' },
+            { german: 'die Sonne', english: 'the sun' },
+            { german: 'der Regen', english: 'the rain' },
+            { german: 'der Schnee', english: 'the snow' },
+            { german: 'die Wolke', english: 'the cloud' },
+            { german: 'der Wind', english: 'the wind' },
+            { german: 'der Himmel', english: 'the sky' },
+            { german: 'die Erde', english: 'the earth' },
+            { german: 'das Meer', english: 'the sea' },
+            { german: 'der Fluss', english: 'the river' },
+            { german: 'der Berg', english: 'the mountain' },
+            { german: 'der Wald', english: 'the forest' },
+
+            // Common Verbs
+            { german: 'sein', english: 'to be' },
+            { german: 'haben', english: 'to have' },
+            { german: 'werden', english: 'to become' },
+            { german: 'können', english: 'to be able to / can' },
+            { german: 'müssen', english: 'to have to / must' },
+            { german: 'wollen', english: 'to want' },
+            { german: 'sollen', english: 'should' },
+            { german: 'dürfen', english: 'to be allowed to / may' },
+            { german: 'mögen', english: 'to like' },
+            { german: 'sagen', english: 'to say' },
+            { german: 'machen', english: 'to do / make' },
+            { german: 'geben', english: 'to give' },
+            { german: 'kommen', english: 'to come' },
+            { german: 'gehen', english: 'to go' },
+            { german: 'sehen', english: 'to see' },
+            { german: 'hören', english: 'to hear' },
+            { german: 'sprechen', english: 'to speak' },
+            { german: 'heißen', english: 'to be called' },
+            { german: 'wohnen', english: 'to live / reside' },
+            { german: 'arbeiten', english: 'to work' },
+            { german: 'lernen', english: 'to learn' },
+            { german: 'fragen', english: 'to ask' },
+            { german: 'antworten', english: 'to answer' },
+            { german: 'kaufen', english: 'to buy' },
+            { german: 'verkaufen', english: 'to sell' },
+            { german: 'essen', english: 'to eat' },
+            { german: 'trinken', english: 'to drink' },
+            { german: 'schlafen', english: 'to sleep' },
+            { german: 'lesen', english: 'to read' },
+            { german: 'schreiben', english: 'to write' },
+            { german: 'finden', english: 'to find' },
+            { german: 'suchen', english: 'to search' },
+            { german: 'spielen', english: 'to play' },
+            { german: 'tanzen', english: 'to dance' },
+            { german: 'singen', english: 'to sing' },
+            { german: 'schwimmen', english: 'to swim' },
+            { german: 'fahren', english: 'to drive / ride' },
+            { german: 'fliegen', english: 'to fly' },
+            { german: 'reisen', english: 'to travel' },
+            { german: 'helfen', english: 'to help' },
+            { german: 'verstehen', english: 'to understand' },
+            { german: 'erklären', english: 'to explain' },
+            { german: 'brauchen', english: 'to need' },
+            { german: 'kennen', english: 'to know (person/place)' },
+            { german: 'wissen', english: 'to know (fact)' },
+            { german: 'glauben', english: 'to believe' },
+            { german: 'zeigen', english: 'to show' },
+            { german: 'öffnen', english: 'to open' },
+            { german: 'schließen', english: 'to close' },
+            { german: 'bezahlen', english: 'to pay' },
+            { german: 'lieben', english: 'to love' },
+            { german: 'hassen', english: 'to hate' },
+            { german: 'beginnen', english: 'to begin' },
+            { german: 'enden', english: 'to end' },
+            { german: 'warten', english: 'to wait' },
+            { german: 'bringen', english: 'to bring' },
+            { german: 'nehmen', english: 'to take' },
+            { german: 'bleiben', english: 'to stay' },
+            { german: 'aufstehen', english: 'to get up' },
+            { german: 'einschlafen', english: 'to fall asleep' },
+            { german: 'aufwachen', english: 'to wake up' },
+            { german: 'anrufen', english: 'to call (on the phone)' },
+            { german: 'einkaufen', english: 'to shop' },
+            { german: 'fernsehen', english: 'to watch TV' },
+            { german: 'mitbringen', english: 'to bring along' },
+            { german: 'mitkommen', english: 'to come along' },
+            { german: 'ausgehen', english: 'to go out' },
+            { german: 'einladen', english: 'to invite' },
+            { german: 'abholen', english: 'to pick up' },
+            { german: 'vorstellen', english: 'to introduce' },
+            { german: 'vergessen', english: 'to forget' },
+            { german: 'erinnern (sich)', english: 'to remember' },
+            { german: 'passieren', english: 'to happen' },
+            { german: 'regnen', english: 'to rain' },
+            { german: 'schneien', english: 'to snow' },
+            { german: 'scheinen', english: 'to shine' },
+            { german: 'kosten', english: 'to cost' },
+            { german: 'dauern', english: 'to last' },
+            { german: 'fehlen', english: 'to be missing' },
+            { german: 'gratulieren', english: 'to congratulate' },
+            { german: 'unterschreiben', english: 'to sign' },
+            { german: 'unterscheiden', english: 'to distinguish' },
+            { german: 'vergleichen', english: 'to compare' },
+            { german: 'entscheiden', english: 'to decide' },
+
+            // Numbers
+            { german: 'null', english: 'zero' },
+            { german: 'eins', english: 'one' },
+            { german: 'zwei', english: 'two' },
+            { german: 'drei', english: 'three' },
+            { german: 'vier', english: 'four' },
+            { german: 'fünf', english: 'five' },
+            { german: 'sechs', english: 'six' },
+            { german: 'sieben', english: 'seven' },
+            { german: 'acht', english: 'eight' },
+            { german: 'neun', english: 'nine' },
+            { german: 'zehn', english: 'ten' },
+            { german: 'elf', english: 'eleven' },
+            { german: 'zwölf', english: 'twelve' },
+            { german: 'dreizehn', english: 'thirteen' },
+            { german: 'vierzehn', english: 'fourteen' },
+            { german: 'fünfzehn', english: 'fifteen' },
+            { german: 'sechzehn', english: 'sixteen' },
+            { german: 'siebzehn', english: 'seventeen' },
+            { german: 'achtzehn', english: 'eighteen' },
+            { german: 'neunzehn', english: 'nineteen' },
+            { german: 'zwanzig', english: 'twenty' },
+            { german: 'einundzwanzig', english: 'twenty-one' },
+            { german: 'dreißig', english: 'thirty' },
+            { german: 'vierzig', english: 'forty' },
+            { german: 'fünfzig', english: 'fifty' },
+            { german: 'sechzig', english: 'sixty' },
+            { german: 'siebzig', english: 'seventy' },
+            { german: 'achtzig', english: 'eighty' },
+            { german: 'neunzig', english: 'ninety' },
+            { german: 'hundert', english: 'one hundred' },
+            { german: 'eintausend', english: 'one thousand' },
+
+            // Prepositions
+            { german: 'in', english: 'in / into' },
+            { german: 'an', english: 'at / on (vertical)' },
+            { german: 'auf', english: 'on (horizontal)' },
+            { german: 'unter', english: 'under / below' },
+            { german: 'über', english: 'over / above' },
+            { german: 'neben', english: 'next to' },
+            { german: 'zwischen', english: 'between' },
+            { german: 'vor', english: 'in front of / before' },
+            { german: 'hinter', english: 'behind' },
+            { german: 'mit', english: 'with' },
+            { german: 'ohne', english: 'without' },
+            { german: 'zu', english: 'to (people/places)' },
+            { german: 'nach', english: 'to (countries/cities) / after' },
+            { german: 'aus', english: 'from (origin) / out of' },
+            { german: 'von', english: 'from (source) / of' },
+            { german: 'für', english: 'for' },
+            { german: 'gegen', english: 'against' },
+            { german: 'durch', english: 'through' },
+            { german: 'um', english: 'around / at (time)' },
+            { german: 'bis', english: 'until / by' },
+            { german: 'seit', english: 'since / for (time)' },
+            { german: 'trotz', english: 'despite' },
+            { german: 'während', english: 'during' },
+            { german: 'wegen', english: 'because of' },
+
+            // Adjectives (additional)
+            { german: 'jung', english: 'young' },
+            { german: 'alt', english: 'old' },
+            { german: 'voll', english: 'full' },
+            { german: 'leer', english: 'empty' },
+            { german: 'laut', english: 'loud' },
+            { german: 'leise', english: 'quiet' },
+            { german: 'hell', english: 'bright' },
+            { german: 'dunkel', english: 'dark' },
+            { german: 'dick', english: 'fat / thick' },
+            { german: 'dünn', english: 'thin' },
+            { german: 'breit', english: 'wide' },
+            { german: 'eng', english: 'narrow' },
+            { german: 'kurz', english: 'short' },
+            { german: 'lang', english: 'long' },
+            { german: 'sauer', english: 'sour / angry' },
+            { german: 'süß', english: 'sweet' },
+            { german: 'salzig', english: 'salty' },
+            { german: 'scharf', english: 'spicy / sharp' },
+            { german: 'sauber', english: 'clean' },
+            { german: 'schmutzig', english: 'dirty' },
+            { german: 'neu', english: 'new' },
+            { german: 'alt', english: 'old' },
+            { german: 'modern', english: 'modern' },
+            { german: 'klassisch', english: 'classic' },
+            { german: 'billig', english: 'cheap' },
+            { german: 'teuer', english: 'expensive' },
+            { german: 'frei', english: 'free' },
+            { german: 'besetzt', english: 'occupied' },
+            { german: 'leer', english: 'empty' },
+            { german: 'voll', english: 'full' },
+            { german: 'bereit', english: 'ready' },
+            { german: 'traurig', english: 'sad' },
+            { german: 'glücklich', english: 'happy' },
+            { german: 'müde', english: 'tired' },
+            { german: 'hungrig', english: 'hungry' },
+            { german: 'durstig', english: 'thirsty' },
+            { german: 'gesund', english: 'healthy' },
+            { german: 'krank', english: 'sick' },
+            { german: 'nett', english: 'nice' },
+            { german: 'freundlich', english: 'friendly' },
+            { german: 'unfreundlich', english: 'unfriendly' },
+            { german: 'pünktlich', english: 'punctual' },
+            { german: 'spät', english: 'late' },
+            { german: 'früh', english: 'early' },
+
+            // Countries & Nationalities
+            { german: 'Deutschland', english: 'Germany' },
+            { german: 'Österreich', english: 'Austria' },
+            { german: 'die Schweiz', english: 'Switzerland' },
+            { german: 'Frankreich', english: 'France' },
+            { german: 'Italien', english: 'Italy' },
+            { german: 'Spanien', english: 'Spain' },
+            { german: 'England', english: 'England' },
+            { german: 'Amerika', english: 'America' },
+            { german: 'China', english: 'China' },
+            { german: 'Japan', english: 'Japan' },
+            { german: 'Russland', english: 'Russia' },
+            { german: 'Türkei', english: 'Turkey' },
+            { german: 'Polen', english: 'Poland' },
+            { german: 'Deutsch', english: 'German (language)' },
+            { german: 'Englisch', english: 'English (language)' },
+            { german: 'Französisch', english: 'French (language)' },
+            { german: 'Italienisch', english: 'Italian (language)' },
+            { german: 'Spanisch', english: 'Spanish (language)' },
+            { german: 'der Deutsche', english: 'the German (male)' },
+            { german: 'die Deutsche', english: 'the German (female)' },
+
+            // Time expressions
+            { german: 'der Morgen', english: 'the morning' },
+            { german: 'der Vormittag', english: 'the forenoon' },
+            { german: 'der Mittag', english: 'the midday' },
+            { german: 'der Nachmittag', english: 'the afternoon' },
+            { german: 'der Abend', english: 'the evening' },
+            { german: 'die Nacht', english: 'the night' },
+            { german: 'die Uhrzeit', english: 'the time (of day)' },
+            { german: 'um', english: 'at (time)' },
+            { german: 'halb', english: 'half (past)' },
+            { german: 'Viertel', english: 'quarter' },
+            { german: 'vor', english: 'to / before' },
+            { german: 'nach', english: 'past / after' },
+            { german: 'die Minute', english: 'the minute' },
+            { german: 'die Stunde', english: 'the hour' },
+            { german: 'der Tag', english: 'the day' },
+            { german: 'die Woche', english: 'the week' },
+            { german: 'der Monat', english: 'the month' },
+            { german: 'das Jahr', english: 'the year' },
+            { german: 'heute', english: 'today' },
+            { german: 'gestern', english: 'yesterday' },
+            { german: 'morgen', english: 'tomorrow' },
+            { german: 'vorgestern', english: 'day before yesterday' },
+            { german: 'übermorgen', english: 'day after tomorrow' },
+            { german: 'am Montag', english: 'on Monday' },
+            { german: 'am Dienstag', english: 'on Tuesday' },
+            { german: 'am Mittwoch', english: 'on Wednesday' },
+            { german: 'am Donnerstag', english: 'on Thursday' },
+            { german: 'am Freitag', english: 'on Friday' },
+            { german: 'am Samstag', english: 'on Saturday' },
+            { german: 'am Sonntag', english: 'on Sunday' },
+            { german: 'am Wochenende', english: 'on the weekend' },
+            { german: 'im Januar', english: 'in January' },
+            { german: 'im Februar', english: 'in February' },
+            { german: 'im März', english: 'in March' },
+            { german: 'im April', english: 'in April' },
+            { german: 'im Mai', english: 'in May' },
+            { german: 'im Juni', english: 'in June' },
+            { german: 'im Juli', english: 'in July' },
+            { german: 'im August', english: 'in August' },
+            { german: 'im September', english: 'in September' },
+            { german: 'im Oktober', english: 'in October' },
+            { german: 'im November', english: 'in November' },
+            { german: 'im Dezember', english: 'in December' },
+            { german: 'im Frühling', english: 'in spring' },
+            { german: 'im Sommer', english: 'in summer' },
+            { german: 'im Herbst', english: 'in autumn' },
+            { german: 'im Winter', english: 'in winter' },
+
+            // Directions & Locations
+            { german: 'links', english: 'left' },
+            { german: 'rechts', english: 'right' },
+            { german: 'geradeaus', english: 'straight ahead' },
+            { german: 'oben', english: 'above / upstairs' },
+            { german: 'unten', english: 'below / downstairs' },
+            { german: 'hier', english: 'here' },
+            { german: 'dort', english: 'there' },
+            { german: 'vorne', english: 'in front' },
+            { german: 'hinten', english: 'behind' },
+            { german: 'nebenan', english: 'next door' },
+            { german: 'draußen', english: 'outside' },
+            { german: 'drinnen', english: 'inside' },
+            { german: 'überall', english: 'everywhere' },
+            { german: 'nirgends', english: 'nowhere' },
+
+            // Common phrases
+            { german: 'Ich verstehe', english: 'I understand' },
+            { german: 'Ich verstehe nicht', english: 'I don\'t understand' },
+            { german: 'Ich weiß', english: 'I know' },
+            { german: 'Ich weiß nicht', english: 'I don\'t know' },
+            { german: 'Ich spreche Deutsch', english: 'I speak German' },
+            { german: 'Ich lerne Deutsch', english: 'I am learning German' },
+            { german: 'Wie bitte?', english: 'Pardon? / What did you say?' },
+            { german: 'Kann ich Ihnen helfen?', english: 'Can I help you? (formal)' },
+            { german: 'Kannst du mir helfen?', english: 'Can you help me? (informal)' },
+            { german: 'Was ist das?', english: 'What is that?' },
+            { german: 'Wer ist das?', english: 'Who is that?' },
+            { german: 'Wo ist...?', english: 'Where is...?' },
+            { german: 'Wie viel kostet...?', english: 'How much does... cost?' },
+            { german: 'Ich hätte gern...', english: 'I would like...' },
+            { german: 'Einen Moment bitte', english: 'One moment please' },
+            { german: 'Guten Appetit!', english: 'Enjoy your meal!' },
+            { german: 'Zum Wohl!', english: 'To your health! (Cheers!)' },
+            { german: 'Prost!', english: 'Cheers! (informal)' },
+            { german: 'Herzlichen Glückwunsch!', english: 'Congratulations!' },
+            { german: 'Alles Gute!', english: 'All the best!' },
+            { german: 'Viel Glück!', english: 'Good luck!' },
+            { german: 'Gute Reise!', english: 'Have a good trip!' },
+            { german: 'Schönes Wochenende!', english: 'Have a nice weekend!' },
+            { german: 'Frohe Weihnachten!', english: 'Merry Christmas!' },
+            { german: 'Frohes neues Jahr!', english: 'Happy New Year!' },
+            { german: 'Alles Liebe!', english: 'All my love!' },
+            { german: 'Ich liebe dich', english: 'I love you' },
+            { german: 'Ich mag dich', english: 'I like you' },
+            { german: 'Ich bin...', english: 'I am...' },
+            { german: 'Ich habe...', english: 'I have...' },
+            { german: 'Ich gehe...', english: 'I go...' },
+            { german: 'Ich komme aus...', english: 'I come from...' },
+            { german: 'Ich wohne in...', english: 'I live in...' },
+            { german: 'Ich arbeite als...', english: 'I work as a...' },
+            { german: 'Ich bin verheiratet', english: 'I am married' },
+            { german: 'Ich bin ledig', english: 'I am single' },
+            { german: 'Ich habe Hunger', english: 'I am hungry' },
+            { german: 'Ich habe Durst', english: 'I am thirsty' },
+            { german: 'Ich bin müde', english: 'I am tired' },
+            { german: 'Ich bin krank', english: 'I am sick' },
+            { german: 'Ich bin froh', english: 'I am happy' },
+            { german: 'Ich bin traurig', english: 'I am sad' },
+            { german: 'Ich bin wütend', english: 'I am angry' },
+            { german: 'Ich bin nervös', english: 'I am nervous' },
+            { german: 'Ich bin gelangweilt', english: 'I am bored' },
+            { german: 'Ich bin beschäftigt', english: 'I am busy' },
+            { german: 'Ich bin frei', english: 'I am free' },
+            { german: 'Ich bin fertig', english: 'I am finished' },
+            { german: 'Es ist kalt', english: 'It is cold' },
+            { german: 'Es ist warm', english: 'It is warm' },
+            { german: 'Es ist heiß', english: 'It is hot' },
+            { german: 'Es regnet', english: 'It is raining' },
+            { german: 'Es schneit', english: 'It is snowing' },
+            { german: 'Die Sonne scheint', english: 'The sun is shining' },
+            { german: 'Wie spät ist es?', english: 'What time is it?' },
+            { german: 'Es ist ein Uhr', english: 'It is one o\'clock' },
+            { german: 'Es ist halb zwei', english: 'It is half past one (1:30)' },
+            { german: 'Es ist Viertel nach zwei', english: 'It is quarter past two (2:15)' },
+            { german: 'Es ist Viertel vor drei', english: 'It is quarter to three (2:45)' },
+            { german: 'Ich brauche Hilfe', english: 'I need help' },
+            { german: 'Ich suche...', english: 'I am looking for...' },
+            { german: 'Darf ich herein?', english: 'May I come in?' },
+            { german: 'Darf ich raus?', english: 'May I go out?' },
+            { german: 'Bitte warten Sie', english: 'Please wait (formal)' },
+            { german: 'Bitte warte', english: 'Please wait (informal)' },
+            { german: 'Ich verstehe nur Bahnhof', english: 'It\'s all Greek to me (I only understand train station)' },
+            { german: 'Ich drücke dir die Daumen', english: 'I\'ll keep my fingers crossed for you' },
+            { german: 'Das macht nichts', english: 'That doesn\'t matter' },
+            { german: 'Das ist mir egal', english: 'I don\'t care' },
+            { german: 'Keine Ahnung', english: 'No idea' },
+            { german: 'Stimmt', english: 'That\'s right' },
+            { german: 'Genau', english: 'Exactly' },
+            { german: 'Vielleicht', english: 'Maybe' },
+            { german: 'Gerne', english: 'Gladly / With pleasure' },
+            { german: 'Leider', english: 'Unfortunately' },
+            { german: 'Natürlich', english: 'Naturally / Of course' },
+            { german: 'Wirklich?', english: 'Really?' },
+            { german: 'Sicher!', english: 'Sure!' },
+            { german: 'Entschuldigen Sie!', english: 'Excuse me! (formal)' },
+            { german: 'Entschuldige!', english: 'Excuse me! (informal)' },
+            { german: 'Herzlich willkommen!', english: 'Welcome!' },
+            { german: 'Vielen Dank für Ihre Hilfe', english: 'Many thanks for your help (formal)' },
+            { german: 'Vielen Dank für deine Hilfe', english: 'Many thanks for your help (informal)' },
+            { german: 'Ich wünsche Ihnen...', english: 'I wish you... (formal)' },
+            { german: 'Ich wünsche dir...', english: 'I wish you... (informal)' },
+            { german: 'Ich bin einverstanden', english: 'I agree' },
+            { german: 'Ich bin nicht einverstanden', english: 'I don\'t agree' },
+            { german: 'Ich bin fertig', english: 'I am finished' },
+            { german: 'Ich bin bereit', english: 'I am ready' },
+            { german: 'Ich habe Zeit', english: 'I have time' },
+            { german: 'Ich habe keine Zeit', english: 'I have no time' },
+            { german: 'Ich muss gehen', english: 'I must go' },
+            { german: 'Ich möchte...', english: 'I would like...' },
+            { german: 'Ich kann...', english: 'I can...' },
+            { german: 'Ich kann nicht...', english: 'I cannot...' },
+            { german: 'Das ist gut', english: 'That is good' },
+            { german: 'Das ist schlecht', english: 'That is bad' },
+            { german: 'Das ist schön', english: 'That is beautiful' },
+            { german: 'Das ist interessant', english: 'That is interesting' },
+            { german: 'Das ist langweilig', english: 'That is boring' },
+            { german: 'Das ist wichtig', english: 'That is important' },
+            { german: 'Das ist einfach', english: 'That is easy' },
+            { german: 'Das ist schwierig', english: 'That is difficult' },
+            { german: 'Das ist richtig', english: 'That is correct' },
+            { german: 'Das ist falsch', english: 'That is wrong' },
+            { german: 'Das ist neu', english: 'That is new' },
+            { german: 'Das ist alt', english: 'That is old' },
+            { german: 'Das ist groß', english: 'That is big' },
+            { german: 'Das ist klein', english: 'That is small' },
+            { german: 'Das ist teuer', english: 'That is expensive' },
+            { german: 'Das ist billig', english: 'That is cheap' },
+            { german: 'Das ist sauber', english: 'That is clean' },
+            { german: 'Das ist schmutzig', english: 'That is dirty' },
+            { german: 'Das ist hell', english: 'bright' },
+            { german: 'dunkel', english: 'dark' },
+            { german: 'laut', english: 'loud' },
+            { german: 'leise', english: 'quiet' },
+            { german: 'voll', english: 'full' },
+            { german: 'leer', english: 'empty' },
+            { german: 'dick', english: 'fat / thick' },
+            { german: 'dünn', english: 'thin' },
+            { german: 'breit', english: 'wide' },
+            { german: 'eng', english: 'narrow' },
+            { german: 'kurz', english: 'short' },
+            { german: 'lang', english: 'long' },
+            { german: 'sauer', english: 'sour / angry' },
+            { german: 'süß', english: 'sweet' },
+            { german: 'salzig', english: 'salty' },
+            { german: 'scharf', english: 'spicy / sharp' },
+            { german: 'bereit', english: 'ready' },
+            { german: 'traurig', english: 'sad' },
+            { german: 'glücklich', english: 'happy' },
+            { german: 'müde', english: 'tired' },
+            { german: 'hungrig', english: 'hungry' },
+            { german: 'durstig', english: 'thirsty' },
+            { german: 'gesund', english: 'healthy' },
+            { german: 'krank', english: 'sick' },
+            { german: 'nett', english: 'nice' },
+            { german: 'freundlich', english: 'friendly' },
+            { german: 'unfreundlich', english: 'unfriendly' },
+            { german: 'pünktlich', english: 'punctual' },
+            { german: 'spät', english: 'late' },
+            { german: 'früh', english: 'early' },
+            { german: 'super', english: 'super' },
+            { german: 'toll', english: 'great' },
+            { german: 'prima', english: 'excellent' },
+            { german: 'wunderbar', english: 'wonderful' },
+            { german: 'fantastisch', english: 'fantastic' },
+            { german: 'schrecklich', english: 'terrible' },
+            { german: 'furchtbar', english: 'awful' },
+            { german: 'egal', english: 'doesn\'t matter' },
+            { german: 'möglich', english: 'possible' },
+            { german: 'unmöglich', english: 'impossible' },
+            { german: 'normal', english: 'normal' },
+            { german: 'besonders', english: 'special' },
+            { german: 'typisch', english: 'typical' },
+            { german: 'anders', english: 'different' },
+            { german: 'gleich', english: 'the same' },
+            { german: 'besser', english: 'better' },
+            { german: 'schlechter', english: 'worse' },
+            { german: 'mehr', english: 'more' },
+            { german: 'weniger', english: 'less' },
+            { german: 'genug', english: 'enough' },
+            { german: 'zu viel', english: 'too much' },
+            { german: 'zu wenig', english: 'too little' },
+            { german: 'alles', english: 'all' },
+            { german: 'nichts', english: 'nothing' },
+            { german: 'alles in Ordnung', english: 'everything is fine' },
+            { german: 'ein Problem', english: 'a problem' },
+            { german: 'keine Lösung', english: 'no solution' },
+            { german: 'eine gute Idee', english: 'a good idea' },
+            { german: 'eine schlechte Idee', english: 'a bad idea' },
+            { german: 'ein Witz', english: 'a joke' },
+            { german: 'ernst', english: 'serious' },
+            { german: 'lustig', english: 'funny' },
+            { german: 'traurig', english: 'sad' },
+            { german: 'ärgerlich', english: 'annoying' },
+            { german: 'peinlich', english: 'embarrassing' },
+            { german: 'schade', english: 'a pity' },
+            { german: 'unglaublich', english: 'unbelievable' },
+            { german: 'unglaublich!', english: 'incredible!' },
+            { german: 'unmöglich!', english: 'impossible!' },
+            { german: 'wichtig!', english: 'important!' },
+            { german: 'richtig!', english: 'correct!' },
+            { german: 'falsch!', english: 'wrong!' },
+            { german: 'super!', english: 'super!' },
+            { german: 'toll!', english: 'great!' },
+            { german: 'prima!', english: 'excellent!' },
+            { german: 'genug!', english: 'enough!' },
+            { german: 'zu viel!', english: 'too much!' },
+            { german: 'zu wenig!', english: 'too little!' },
+            { german: 'alles!', english: 'all!' },
+            { german: 'nichts!', english: 'nothing!' },
+            { german: 'ein Problem!', english: 'a problem!' },
+            { german: 'keine Lösung!', english: 'no solution!' },
+            { german: 'eine gute Idee!', english: 'a good idea!' },
+            { german: 'eine schlechte Idee!', english: 'a bad idea!' },
+            { german: 'ein Witz!', english: 'a joke!' },
+            { german: 'ernst!', english: 'serious!' },
+            { german: 'lustig!', english: 'funny!' },
+            { german: 'traurig!', english: 'sad!' },
+            { german: 'ärgerlich!', english: 'annoying!' },
+            { german: 'peinlich!', english: 'embarrassing!' },
+            { german: 'schade!', english: 'a pity!' },
+            { german: 'wunderbar!', english: 'wonderful!' },
+            { german: 'fantastisch!', english: 'fantastic!' },
+            { german: 'unglaublich!', english: 'unbelievable!' },
+            { german: 'unmöglich!', english: 'impossible!' },
+            { german: 'wichtig!', english: 'important!' },
+            { german: 'richtig!', english: 'correct!' },
+            { german: 'falsch!', english: 'wrong!' },
+            { german: 'super!', english: 'super!' },
+            { german: 'toll!', english: 'great!' },
+            { german: 'prima!', english: 'excellent!' },
+            { german: 'genug!', english: 'enough!' },
+            { german: 'zu viel!', english: 'too much!' },
+            { german: 'zu wenig!', english: 'too little!' },
+            { german: 'alles!', english: 'all!' },
+            { german: 'nichts!', english: 'nothing!' },
+            { german: 'ein Problem!', english: 'a problem!' },
+            { german: 'keine Lösung!', english: 'no solution!' },
+            { german: 'eine gute Idee!', english: 'a good idea!' },
+            { german: 'eine schlechte Idee!', english: 'a bad idea!' },
+            { german: 'ein Witz!', english: 'a joke!' },
+            { german: 'ernst!', english: 'serious!' },
+            { german: 'lustig!', english: 'funny!' },
+            { german: 'traurig!', english: 'sad!' },
+            { german: 'ärgerlich!', english: 'annoying!' },
+            { german: 'peinlich!', english: 'embarrassing!' },
+            { german: 'schade!', english: 'a pity' },
+            { german: 'die Farbe', english: 'the color' },
+            { german: 'rot', english: 'red' },
+            { german: 'blau', english: 'blue' },
+            { german: 'grün', english: 'green' },
+            { german: 'gelb', english: 'yellow' },
+            { german: 'schwarz', english: 'black' },
+            { german: 'weiß', english: 'white' },
+            { german: 'grau', english: 'grey' },
+            { german: 'braun', english: 'brown' },
+            { german: 'orange', english: 'orange' },
+            { german: 'lila', english: 'purple' },
+            { german: 'rosa', english: 'pink' },
+            { german: 'hell', english: 'light' },
+            { german: 'dunkel', english: 'dark' },
+            { german: 'der Tag', english: 'the day' },
+            { german: 'die Nacht', english: 'the night' },
+            { german: 'der Morgen', english: 'the morning' },
+            { german: 'der Abend', english: 'the evening' },
+            { german: 'die Woche', english: 'the week' },
+            { german: 'der Monat', english: 'the month' },
+            { german: 'das Jahr', english: 'the year' },
+            { german: 'heute', english: 'today' },
+            { german: 'gestern', english: 'yesterday' },
+            { german: 'morgen', english: 'tomorrow' },
+            { german: 'jetzt', english: 'now' },
+            { german: 'später', english: 'later' },
+            { german: 'immer', english: 'always' },
+            { german: 'nie', english: 'never' },
+            { german: 'oft', english: 'often' },
+            { german: 'manchmal', english: 'sometimes' },
+            { german: 'bald', english: 'soon' },
+            { german: 'früh', english: 'early' },
+            { german: 'spät', english: 'late' },
+            { german: 'die Zeit', english: 'the time' },
+            { german: 'die Uhr', english: 'the clock / o\'clock' },
+            { german: 'die Minute', english: 'the minute' },
+            { german: 'die Stunde', english: 'the hour' },
+            { german: 'der Kalender', english: 'the calendar' },
+            { german: 'der Termin', english: 'the appointment' },
+            { german: 'das Datum', english: 'the date' },
+            { german: 'der Geburtstag', english: 'the birthday' },
+            { german: 'die Feiertage', english: 'the holidays' },
+            { german: 'der Frühling', english: 'the spring' },
+            { german: 'im Sommer', english: 'in summer' },
+            { german: 'im Herbst', english: 'in autumn' },
+            { german: 'im Winter', english: 'in winter' },
+            { german: 'das Wetter', english: 'the weather' },
+            { german: 'die Sonne', english: 'the sun' },
+            { german: 'der Regen', english: 'the rain' },
+            { german: 'der Schnee', english: 'the snow' },
+            { german: 'die Wolke', english: 'the cloud' },
+            { german: 'der Wind', english: 'the wind' },
+            { german: 'der Himmel', english: 'the sky' },
+            { german: 'die Erde', english: 'the earth' },
+            { german: 'das Meer', english: 'the sea' },
+            { german: 'der Fluss', english: 'the river' },
+            { german: 'der Berg', english: 'the mountain' },
+            { german: 'der Wald', english: 'the forest' },
+            { german: 'die Blume', english: 'the flower' },
+            { german: 'der Baum', english: 'the tree' },
+            { german: 'das Tier', english: 'the animal' },
+            { german: 'der Hund', english: 'the dog' },
+            { german: 'die Katze', english: 'the cat' },
+            { german: 'der Vogel', english: 'the bird' },
+            { german: 'der Fisch', english: 'the fish' },
+            { german: 'die Maus', english: 'the mouse' },
+            { german: 'das Pferd', english: 'the horse' },
+            { german: 'die Kuh', english: 'the cow' },
+            { german: 'das Schwein', english: 'the pig' },
+            { german: 'das Schaf', english: 'the sheep' },
+            { german: 'der Hahn', english: 'the rooster' },
+            { german: 'die Henne', english: 'the hen' },
+            { german: 'das Küken', english: 'the chick' },
+            { german: 'die Ente', english: 'the duck' },
+            { german: 'die Gans', english: 'the goose' },
+            { german: 'der Hase', english: 'the rabbit' },
+            { german: 'der Bär', english: 'the bear' },
+            { german: 'der Löwe', english: 'the lion' },
+            { german: 'der Tiger', english: 'the tiger' },
+            { german: 'der Elefant', english: 'the elephant' },
+            { german: 'die Giraffe', english: 'the giraffe' },
+            { german: 'das Zebra', english: 'the zebra' },
+            { german: 'der Affe', english: 'the monkey' },
+            { german: 'die Schlange', english: 'the snake' },
+            { german: 'das Krokodil', english: 'the crocodile' },
+            { german: 'der Frosch', english: 'the frog' },
+            { german: 'die Spinne', english: 'the spider' },
+            { german: 'die Fliege', english: 'the fly' },
+            { german: 'die Mücke', english: 'the mosquito' },
+            { german: 'die Biene', english: 'the bee' },
+            { german: 'der Schmetterling', english: 'the butterfly' },
+            { german: 'der Käfer', english: 'the beetle' },
+            { german: 'die Ameise', english: 'the ant' },
+            { german: 'der Wurm', english: 'the worm' },
+            { german: 'der Pilz', english: 'the mushroom' },
+            { german: 'die Pflanze', english: 'the plant' },
+            { german: 'der Garten', english: 'the garden' },
+            { german: 'der Park', english: 'the park' },
+            { german: 'der Wald', english: 'the forest' },
+            { german: 'der See', english: 'the lake' },
+            { german: 'der Strand', english: 'the beach' },
+            { german: 'die Insel', english: 'the island' },
+            { german: 'die Wüste', english: 'the desert' },
+            { german: 'der Himmel', english: 'the sky' },
+            { german: 'die Wolke', english: 'the cloud' },
+            { german: 'der Stern', english: 'the star' },
+            { german: 'der Mond', english: 'the moon' },
+            { german: 'die Sonne', english: 'the sun' },
+            { german: 'das Licht', english: 'the light' },
+            { german: 'die Dunkelheit', english: 'the darkness' },
+            { german: 'der Schatten', english: 'the shadow' },
+            { german: 'der Lärm', english: 'the noise' },
+            { german: 'die Stille', english: 'the silence' },
+            { german: 'der Geruch', english: 'the smell' },
+            { german: 'der Geschmack', english: 'the taste' },
+            { german: 'das Gefühl', english: 'the feeling' },
+            { german: 'die Freude', english: 'the joy' },
+            { german: 'die Traurigkeit', english: 'the sadness' },
+            { german: 'die Angst', english: 'the fear' },
+            { german: 'die Liebe', english: 'the love' },
+            { german: 'der Hass', english: 'the hate' },
+            { german: 'die Überraschung', english: 'the surprise' },
+            { german: 'die Wut', english: 'the anger' },
+            { german: 'die Geduld', english: 'the patience' },
+            { german: 'die Ungeduld', english: 'the impatience' },
+            { german: 'die Hoffnung', english: 'the hope' },
+            { german: 'die Enttäuschung', english: 'the disappointment' },
+            { german: 'der Mut', english: 'the courage' },
+            { german: 'die Angst', english: 'the fear' },
+            { german: 'der Schmerz', english: 'the pain' },
+            { german: 'die Gesundheit', english: 'the health' },
+            { german: 'die Krankheit', english: 'the illness' },
+            { german: 'das Fieber', english: 'the fever' },
+            { german: 'der Husten', english: 'the cough' },
+            { german: 'der Schnupfen', english: 'the cold (illness)' },
+            { german: 'der Kopfschmerz', english: 'the headache' },
+            { german: 'der Bauchschmerz', english: 'the stomach ache' },
+            { german: 'der Zahnarzt', english: 'the dentist' },
+            { german: 'das Medikament', english: 'the medicine' },
+            { german: 'die Apotheke', english: 'the pharmacy' },
+            { german: 'das Krankenhaus', english: 'the hospital' },
+            { german: 'der Arzt', english: 'the doctor' },
+            { german: 'die Ärztin', english: 'the doctor (female)' },
+            { german: 'die Krankenschwester', english: 'the nurse' },
+            { german: 'die Operation', english: 'the operation' },
+            { german: 'die Spritze', english: 'the injection' },
+            { german: 'die Tablette', english: 'the tablet' },
+            { german: 'die Salbe', english: 'the ointment' },
+            { german: 'die Wunde', english: 'the wound' },
+            { german: 'das Pflaster', english: 'the plaster / band-aid' },
+            { german: 'der Verband', english: 'the bandage' },
+            { german: 'die Verletzung', english: 'the injury' },
+            { german: 'der Unfall', english: 'the accident' },
+            { german: 'die Hilfe', english: 'the help' },
+            { german: 'der Notruf', english: 'the emergency call' },
+            { german: 'die Polizei', english: 'the police' },
+            { german: 'die Feuerwehr', english: 'the fire department' },
+            { german: 'der Krankenwagen', english: 'the ambulance' },
+            { german: 'das Leben', english: 'the life' },
+            { german: 'der Tod', english: 'the death' },
+            { german: 'die Geburt', english: 'the birth' },
+            { german: 'die Hochzeit', english: 'the wedding' },
+            { german: 'die Scheidung', english: 'the divorce' },
+            { german: 'die Rente', english: 'the pension' },
+            { german: 'der Urlaub', english: 'the vacation' },
+            { german: 'die Reise', english: 'the journey' },
+            { german: 'das Gepäck', english: 'the luggage' },
+            { german: 'der Koffer', english: 'the suitcase' },
+            { german: 'der Rucksack', english: 'the backpack' },
+            { german: 'der Pass', english: 'the passport' },
+            { german: 'das Visum', english: 'the visa' },
+            { german: 'die Grenze', english: 'the border' },
+            { german: 'der Zoll', english: 'the customs' },
+            { german: 'das Hotel', english: 'the hotel' },
+            { german: 'die Jugendherberge', english: 'the youth hostel' },
+            { german: 'die Pension', english: 'the guesthouse' },
+            { german: 'das Zimmer', english: 'the room' },
+            { german: 'die Rezeption', english: 'the reception' },
+            { german: 'der Aufzug', english: 'the elevator' },
+            { german: 'die Treppe', english: 'the stairs' },
+            { german: 'das Erdgeschoss', english: 'the ground floor' },
+            { german: 'der erste Stock', english: 'the first floor' },
+            { german: 'die Aussicht', english: 'the view' },
+            { german: 'der Schlüssel', english: 'the key' },
+            { german: 'die Rechnung', english: 'the bill' },
+            { german: 'das Trinkgeld', english: 'the tip' },
+            { german: 'die Speisekarte', english: 'the menu' },
+            { german: 'das Gericht', english: 'the dish' },
+            { german: 'das Getränk', english: 'the drink' },
+            { german: 'der Kellner', english: 'the waiter' },
+            { german: 'die Kellnerin', english: 'the waitress' },
+            { german: 'bestellen', english: 'to order' },
+            { german: 'bezahlen', english: 'to pay' },
+            { german: 'reservieren', english: 'to reserve' },
+            { german: 'der Tisch', english: 'the table' },
+            { german: 'der Stuhl', english: 'the chair' },
+            { german: 'die Gabel', english: 'the fork' },
+            { german: 'das Messer', english: 'the knife' },
+            { german: 'der Löffel', english: 'the spoon' },
+            { german: 'der Teller', english: 'the plate' },
+            { german: 'die Tasse', english: 'the cup' },
+            { german: 'das Glas', english: 'the glass' },
+            { german: 'die Flasche', english: 'the bottle' },
+            { german: 'das Brot', english: 'the bread' },
+            { german: 'das Brötchen', english: 'the bread roll' },
+            { german: 'der Käse', english: 'the cheese' },
+            { german: 'die Wurst', english: 'the sausage' },
+            { german: 'der Schinken', english: 'the ham' },
+            { german: 'das Ei', english: 'the egg' },
+            { german: 'die Butter', english: 'the butter' },
+            { german: 'die Marmelade', english: 'the jam' },
+            { german: 'der Honig', english: 'the honey' },
+            { german: 'der Zucker', english: 'the sugar' },
+            { german: 'das Salz', english: 'the salt' },
+            { german: 'der Pfeffer', english: 'the pepper' },
+            { german: 'das Öl', english: 'the oil' },
+            { german: 'der Essig', english: 'the vinegar' },
+            { german: 'das Obst', english: 'the fruit' },
+            { german: 'der Apfel', english: 'the apple' },
+            { german: 'die Banane', english: 'the banana' },
+            { german: 'die Orange', english: 'the orange' },
+            { german: 'die Zitrone', english: 'the lemon' },
+            { german: 'die Traube', english: 'the grape' },
+            { german: 'die Kirsche', english: 'the cherry' },
+            { german: 'die Erdbeere', english: 'the strawberry' },
+            { german: 'die Himbeere', english: 'the raspberry' },
+            { german: 'die Birne', english: 'the pear' },
+            { german: 'der Pfirsich', english: 'the peach' },
+            { german: 'die Pflaume', english: 'the plum' },
+            { german: 'das Gemüse', english: 'the vegetables' },
+            { german: 'die Kartoffel', english: 'the potato' },
+            { german: 'die Tomate', english: 'the tomato' },
+            { german: 'die Zwiebel', english: 'the onion' },
+            { german: 'der Knoblauch', english: 'the garlic' },
+            { german: 'der Salat', english: 'the salad' },
+            { german: 'die Gurke', english: 'the cucumber' },
+            { german: 'die Karotte', english: 'the carrot' },
+            { german: 'der Pilz', english: 'the mushroom' },
+            { german: 'das Fleisch', english: 'the meat' },
+            { german: 'der Fisch', english: 'the fish' },
+            { german: 'das Hähnchen', english: 'the chicken' },
+            { german: 'das Rindfleisch', english: 'the beef' },
+            { german: 'das Schweinefleisch', english: 'the pork' },
+            { german: 'der Reis', english: 'the rice' },
+            { german: 'die Nudeln', english: 'the pasta' },
+            { german: 'die Suppe', english: 'the soup' },
+            { german: 'der Kuchen', english: 'the cake' },
+            { german: 'das Gebäck', english: 'the pastry' },
+            { german: 'das Eis', english: 'the ice cream' },
+            { german: 'die Schokolade', english: 'the chocolate' },
+            { german: 'der Zucker', english: 'the sugar' },
+            { german: 'das Salz', english: 'the salt' },
+            { german: 'der Pfeffer', english: 'the pepper' },
+            { german: 'das Gewürz', english: 'the spice' },
+            { german: 'das Frühstück', english: 'the breakfast' },
+            { german: 'das Mittagessen', english: 'the lunch' },
+            { german: 'das Abendessen', english: 'the dinner' },
+            { german: 'der Snack', english: 'the snack' },
+            { german: 'hungrig', english: 'hungry' },
+            { german: 'durstig', english: 'thirsty' },
+            { german: 'lecker', english: 'delicious' },
+            { german: 'satt', english: 'full (from eating)' },
+            { german: 'die Kleidung', english: 'the clothing' },
+            { german: 'das Hemd', english: 'the shirt' },
+            { german: 'die Bluse', english: 'the blouse' },
+            { german: 'das T-Shirt', english: 'the T-shirt' },
+            { german: 'die Hose', english: 'the trousers' },
+            { german: 'die Jeans', english: 'the jeans' },
+            { german: 'der Rock', english: 'the skirt' },
+            { german: 'das Kleid', english: 'the dress' },
+            { german: 'der Pullover', english: 'the sweater' },
+            { german: 'die Jacke', english: 'the jacket' },
+            { german: 'der Mantel', english: 'the coat' },
+            { german: 'die Socken', english: 'the socks' },
+            { german: 'die Schuhe', english: 'the shoes' },
+            { german: 'die Stiefel', english: 'the boots' },
+            { german: 'der Hut', english: 'the hat' },
+            { german: 'die Mütze', english: 'the cap / beanie' },
+            { german: 'der Schal', english: 'the scarf' },
+            { german: 'die Handschuhe', english: 'the gloves' },
+            { german: 'die Tasche', english: 'the bag' },
+            { german: 'der Regenschirm', english: 'the umbrella' },
+            { german: 'die Brille', english: 'the glasses' },
+            { german: 'die Sonnenbrille', english: 'the sunglasses' },
+            { german: 'der Schmuck', english: 'the jewelry' },
+            { german: 'die Kette', english: 'the necklace' },
+            { german: 'der Ring', english: 'the ring' },
+            { german: 'die Ohrringe', english: 'the earrings' },
+            { german: 'die Uhr', english: 'the watch' },
+            { german: 'der Gürtel', english: 'the belt' },
+            { german: 'der Anzug', english: 'the suit' },
+            { german: 'das Kostüm', english: 'the costume' },
+            { german: 'die Uniform', english: 'the uniform' },
+            { german: 'anziehen', english: 'to put on (clothes)' },
+            { german: 'ausziehen', english: 'to take off (clothes)' },
+            { german: 'tragen', english: 'to wear' },
+            { german: 'waschen', english: 'to wash' },
+            { german: 'bügeln', english: 'to iron' },
+            { german: 'sauber', english: 'clean' },
+            { german: 'schmutzig', english: 'dirty' },
+            { german: 'neu', english: 'new' },
+            { german: 'alt', english: 'old' },
+            { german: 'groß', english: 'large' },
+            { german: 'klein', english: 'small' },
+            { german: 'eng', english: 'tight' },
+            { german: 'weit', english: 'wide / loose' },
+            { german: 'kurz', english: 'short' },
+            { german: 'lang', english: 'long' },
+            { german: 'schön', english: 'beautiful' },
+            { german: 'hässlich', english: 'ugly' },
+            { german: 'modern', english: 'modern' },
+            { german: 'klassisch', english: 'classic' },
+            { german: 'billig', english: 'cheap' },
+            { german: 'teuer', english: 'expensive' },
+            { german: 'die Größe', english: 'the size' },
+            { german: 'die Farbe', english: 'the color' },
+            { german: 'das Material', english: 'the material' },
+            { german: 'die Baumwolle', english: 'the cotton' },
+            { german: 'die Wolle', english: 'the wool' },
+            { german: 'die Seide', english: 'the silk' },
+            { german: 'das Leder', english: 'the leather' },
+            { german: 'der Stoff', english: 'the fabric' },
+            { german: 'das Muster', english: 'the pattern' },
+            { german: 'gestreift', english: 'striped' },
+            { german: 'kariert', english: 'checked' },
+            { german: 'gepunktet', english: 'dotted' },
+            { german: 'einfarbig', english: 'plain (color)' },
+            { german: 'bunt', english: 'colorful' },
+            { german: 'hell', english: 'light' },
+            { german: 'dunkel', english: 'dark' },
+            { german: 'passen', english: 'to fit' },
+            { german: 'stehen', english: 'to suit (clothes)' },
+            { german: 'gefallen', english: 'to like (something)' },
+            { german: 'die Anprobe', english: 'the fitting' },
+            { german: 'der Spiegel', english: 'the mirror' },
+            { german: 'die Umkleidekabine', english: 'the changing room' },
+            { german: 'der Preis', english: 'the price' },
+            { german: 'das Angebot', english: 'the offer' },
+            { german: 'der Rabatt', english: 'the discount' },
+            { german: 'der Ausverkauf', english: 'the sale' },
+            { german: 'kaufen', english: 'to buy' },
+            { german: 'verkaufen', english: 'to sell' },
+            { german: 'tauschen', english: 'to exchange' },
+            { german: 'zurückgeben', english: 'to return' },
+            { german: 'der Kassenbon', english: 'the receipt' },
+            { german: 'die Garantie', english: 'the warranty' },
+            { german: 'der Kunde', english: 'the customer (male)' },
+            { german: 'die Kundin', english: 'the customer (female)' },
+            { german: 'der Verkäufer', english: 'the salesperson (male)' },
+            { german: 'die Verkäuferin', english: 'the salesperson (female)' },
+            { german: 'der Laden', english: 'the shop' },
+            { german: 'das Geschäft', english: 'the business / store' },
+            { german: 'der Supermarkt', english: 'the supermarket' },
+            { german: 'der Markt', english: 'the market' },
+            { german: 'die Bäckerei', english: 'the bakery' },
+            { german: 'die Metzgerei', english: 'the butcher shop' },
+            { german: 'die Apotheke', english: 'the pharmacy' },
+            { german: 'die Post', english: 'the post office' },
+            { german: 'die Bank', english: 'the bank' },
+            { german: 'das Museum', english: 'the museum' },
+            { german: 'das Kino', english: 'the cinema' },
+            { german: 'das Theater', english: 'the theater' },
+            { german: 'das Konzert', english: 'the concert' },
+            { german: 'die Ausstellung', english: 'the exhibition' },
+            { german: 'der Park', english: 'the park' },
+            { german: 'der Spielplatz', english: 'the playground' },
+            { german: 'das Schwimmbad', english: 'the swimming pool' },
+            { german: 'der Sportplatz', english: 'the sports field' },
+            { german: 'das Stadion', english: 'the stadium' },
+            { german: 'die Bibliothek', english: 'the library' },
+            { german: 'die Schule', english: 'the school' },
+            { german: 'die Universität', english: 'the university' },
+            { german: 'das Büro', english: 'the office' },
+            { german: 'die Fabrik', english: 'the factory' },
+            { german: 'die Kirche', english: 'the church' },
+            { german: 'die Moschee', english: 'the mosque' },
+            { german: 'die Synagoge', english: 'the synagogue' },
+            { german: 'der Tempel', english: 'the temple' },
+            { german: 'der Friedhof', english: 'the cemetery' },
+            { german: 'der Bahnhof', english: 'the train station' },
+            { german: 'der Flughafen', english: 'the airport' },
+            { german: 'der Hafen', english: 'the harbor' },
+            { german: 'die Bushaltestelle', english: 'the bus stop' },
+            { german: 'die U-Bahn', english: 'the subway' },
+            { german: 'die S-Bahn', english: 'the suburban train' },
+            { german: 'die Straßenbahn', english: 'the tram' },
+            { german: 'das Taxi', english: 'the taxi' },
+            { german: 'das Auto', english: 'the car' },
+            { german: 'das Fahrrad', english: 'the bicycle' },
+            { german: 'der Motorroller', english: 'the scooter' },
+            { german: 'das Motorrad', english: 'the motorcycle' },
+            { german: 'der LKW', english: 'the truck' },
+            { german: 'der Bus', english: 'the bus' },
+            { german: 'der Zug', english: 'the train' },
+            { german: 'das Flugzeug', english: 'the airplane' },
+            { german: 'das Schiff', english: 'the ship' },
+            { german: 'die Brücke', english: 'the bridge' },
+            { german: 'die Straße', english: 'the street' },
+            { german: 'der Weg', english: 'the way / path' },
+            { german: 'die Kreuzung', english: 'the intersection' },
+            { german: 'die Ampel', english: 'the traffic light' },
+            { german: 'das Schild', english: 'the sign' },
+            { german: 'die Richtung', english: 'the direction' },
+            { german: 'links', english: 'left' },
+            { german: 'rechts', english: 'right' },
+            { german: 'geradeaus', english: 'straight ahead' },
+            { german: 'oben', english: 'above' },
+            { german: 'unten', english: 'below' },
+            { german: 'vorne', english: 'in front' },
+            { german: 'hinten', english: 'behind' },
+            { german: 'neben', english: 'next to' },
+            { german: 'zwischen', english: 'between' },
+            { german: 'gegenüber', english: 'opposite' },
+            { german: 'hier', english: 'here' },
+            { german: 'dort', english: 'there' },
+            { german: 'überall', english: 'everywhere' },
+            { german: 'nirgends', english: 'nowhere' },
+            { german: 'die Nummer', english: 'the number' },
+            { german: 'die Adresse', english: 'the address' },
+            { german: 'die Postleitzahl', english: 'the postal code' },
+            { german: 'die Telefonnummer', english: 'the phone number' },
+            { german: 'die E-Mail-Adresse', english: 'the email address' },
+            { german: 'das Internet', english: 'the internet' },
+            { german: 'der Computer', english: 'the computer' },
+            { german: 'das Handy', english: 'the mobile phone' },
+            { german: 'der Bildschirm', english: 'the screen' },
+            { german: 'die Tastatur', english: 'the keyboard' },
+            { german: 'die Maus', english: 'the mouse' },
+            { german: 'der Drucker', english: 'the printer' },
+            { german: 'das Papier', english: 'the paper' },
+            { german: 'der Stift', english: 'the pen' },
+            { german: 'der Bleistift', english: 'the pencil' },
+            { german: 'das Buch', english: 'the book' },
+            { german: 'die Zeitung', english: 'the newspaper' },
+            { german: 'die Zeitschrift', english: 'the magazine' },
+            { german: 'der Brief', english: 'the letter' },
+            { german: 'die Postkarte', english: 'the postcard' },
+            { german: 'das Paket', english: 'the package' },
+            { german: 'der Umschlag', english: 'the envelope' },
+            { german: 'die Briefmarke', english: 'the stamp' },
+            { german: 'schreiben', english: 'to write' },
+            { german: 'lesen', english: 'to read' },
+            { german: 'sprechen', english: 'to speak' },
+            { german: 'hören', english: 'to hear' },
+            { german: 'sehen', english: 'to see' },
+            { german: 'fragen', english: 'to ask' },
+            { german: 'antworten', english: 'to answer' },
+            { german: 'verstehen', english: 'to understand' },
+            { german: 'wissen', english: 'to know (facts)' },
+            { german: 'kennen', english: 'to know (people/places)' },
+            { german: 'lernen', english: 'to learn' },
+            { german: 'lehren', english: 'to teach' },
+            { german: 'studieren', english: 'to study' },
+            { german: 'arbeiten', english: 'to work' },
+            { german: 'suchen', english: 'to search' },
+            { german: 'finden', english: 'to find' },
+            { german: 'geben', english: 'to give' },
+            { german: 'nehmen', english: 'to take' },
+            { german: 'bringen', english: 'to bring' },
+            { german: 'holen', english: 'to fetch' },
+            { german: 'machen', english: 'to make / to do' },
+            { german: 'kochen', english: 'to cook' },
+            { german: 'backen', english: 'to bake' },
+            { german: 'essen', english: 'to eat' },
+            { german: 'trinken', english: 'to drink' },
+            { german: 'schlafen', english: 'to sleep' },
+            { german: 'aufstehen', english: 'to get up' },
+            { german: 'duschen', english: 'to shower' },
+            { german: 'baden', english: 'to bathe' },
+            { german: 'anziehen', english: 'to put on (clothes)' },
+            { german: 'ausziehen', english: 'to take off (clothes)' },
+            { german: 'waschen', english: 'to wash' },
+            { german: 'putzen', english: 'to clean' },
+            { german: 'aufräumen', english: 'to tidy up' },
+            { german: 'einkaufen', english: 'to shop' },
+            { german: 'bezahlen', english: 'to pay' },
+            { german: 'kosten', english: 'to cost' },
+            { german: 'verkaufen', english: 'to sell' },
+            { german: 'mieten', english: 'to rent' },
+            { german: 'wohnen', english: 'to live' },
+            { german: 'leben', english: 'to live (existence)' },
+            { german: 'sterben', english: 'to die' },
+            { german: 'geboren werden', english: 'to be born' },
+            { german: 'heiraten', english: 'to marry' },
+            { german: 'scheiden lassen', english: 'to divorce' },
+            { german: 'lachen', english: 'to laugh' },
+            { german: 'weinen', english: 'to cry' },
+            { german: 'lächeln', english: 'to smile' },
+            { german: 'singen', english: 'to sing' },
+            { german: 'tanzen', english: 'to dance' },
+            { german: 'spielen', english: 'to play' },
+            { german: 'malen', english: 'to paint' },
+            { german: 'zeichnen', english: 'to draw' },
+            { german: 'fotografieren', english: 'to photograph' },
+            { german: 'reisen', english: 'to travel' },
+            { german: 'fahren', english: 'to drive / ride' },
+            { german: 'fliegen', english: 'to fly' },
+            { german: 'gehen', english: 'to walk' },
+            { german: 'laufen', english: 'to run' },
+            { german: 'schwimmen', english: 'to swim' },
+            { german: 'springen', english: 'to jump' },
+            { german: 'sitzen', english: 'to sit' },
+            { german: 'stehen', english: 'to stand' },
+            { german: 'liegen', english: 'to lie' },
+            { german: 'schneiden', english: 'to cut' },
+            { german: 'kleben', english: 'to glue' },
+            { german: 'öffnen', english: 'to open' },
+            { german: 'schließen', english: 'to close' },
+            { german: 'drücken', english: 'to press / push' },
+            { german: 'ziehen', english: 'to pull' },
+            { german: 'werfen', english: 'to throw' },
+            { german: 'fangen', english: 'to catch' },
+            { german: 'geben', english: 'to give' },
+            { german: 'bekommen', english: 'to get / receive' },
+            { german: 'bringen', english: 'to bring' },
+            { german: 'holen', english: 'to fetch' },
+            { german: 'zeigen', english: 'to show' },
+            { german: 'erklären', english: 'to explain' },
+            { german: 'fragen', english: 'to ask' },
+            { german: 'antworten', english: 'to answer' },
+            { german: 'wiederholen', english: 'to repeat' },
+            { german: 'üben', english: 'to practice' },
+            { german: 'vergessen', english: 'to forget' },
+            { german: 'erinnern', english: 'to remember' },
+            { german: 'passieren', english: 'to happen' },
+            { german: 'regnen', english: 'to rain' },
+            { german: 'schneien', english: 'to snow' },
+            { german: 'scheinen', english: 'to shine' },
+            { german: 'weinen', english: 'to cry' },
+            { german: 'lachen', english: 'to laugh' },
+            { german: 'lächeln', english: 'to smile' },
+            { german: 'grüßen', english: 'to greet' },
+            { german: 'sich verabschieden', english: 'to say goodbye' },
+            { german: 'danken', english: 'to thank' },
+            { german: 'bitten', english: 'to ask for / request' },
+            { german: 'entschuldigen', english: 'to apologize' },
+            { german: 'gratulieren', english: 'to congratulate' },
+            { german: 'wünschen', english: 'to wish' },
+            { german: 'hoffen', english: 'to hope' },
+            { german: 'glauben', english: 'to believe' },
+            { german: 'meinen', english: 'to mean / think' },
+            { german: 'denken', english: 'to think' },
+            { german: 'fühlen', english: 'to feel' },
+            { german: 'brauchen', english: 'to need' },
+            { german: 'möchten', english: 'would like' },
+            { german: 'wollen', english: 'to want' },
+            { german: 'sollen', english: 'should' },
+            { german: 'dürfen', english: 'may / to be allowed' },
+            { german: 'müssen', english: 'must / to have to' },
+            { german: 'können', english: 'can / to be able to' },
+            { german: 'werden', english: 'to become / will' },
+            { german: 'bleiben', english: 'to stay' },
+            { german: 'besuchen', english: 'to visit' },
+            { german: 'treffen', english: 'to meet' },
+            { german: 'anrufen', english: 'to call (on phone)' },
+            { german: 'schicken', english: 'to send' },
+            { german: 'bekommen', english: 'to get / receive' },
+            { german: 'verlieren', english: 'to lose' },
+            { german: 'finden', english: 'to find' },
+            { german: 'suchen', english: 'to search' },
+            { german: 'öffnen', english: 'to open' },
+            { german: 'schließen', english: 'to close' },
+            { german: 'beginnen', english: 'to begin' },
+            { german: 'enden', english: 'to end' },
+            { german: 'starten', english: 'to start' },
+            { german: 'stoppen', english: 'to stop' },
+            { german: 'fertig sein', english: 'to be finished' },
+            { german: 'bereit sein', english: 'to be ready' },
+            { german: 'warten', english: 'to wait' },
+            { german: 'helfen', english: 'to help' },
+            { german: 'zeigen', english: 'to show' },
+            { german: 'erklären', english: 'to explain' },
+            { german: 'unterschreiben', english: 'to sign' },
+            { german: 'unterscheiden', english: 'to distinguish' },
+            { german: 'vergleichen', english: 'to compare' },
+            { german: 'entscheiden', english: 'to decide' },
+            { german: 'planen', english: 'to plan' },
+            { german: 'organisieren', english: 'to organize' },
+            { german: 'reparieren', english: 'to repair' },
+            { german: 'benutzen', english: 'to use' },
+            { german: 'brauchen', english: 'to need' },
+            { german: 'haben', english: 'to have' },
+            { german: 'sein', english: 'to be' },
+            { german: 'werden', english: 'to become' },
+            { german: 'gehen', english: 'to go' },
+            { german: 'kommen', english: 'to come' },
+            { german: 'machen', english: 'to make / do' },
+            { german: 'sprechen', english: 'to speak' },
+            { german: 'sehen', english: 'to see' },
+            { german: 'hören', english: 'to hear' },
+            { german: 'essen', english: 'to eat' },
+            { german: 'trinken', english: 'to drink' },
+            { german: 'schlafen', english: 'to sleep' },
+            { german: 'leben', english: 'to live' },
+            { german: 'arbeiten', english: 'to work' },
+            { german: 'lernen', english: 'to learn' },
+            { german: 'fragen', english: 'to ask' },
+            { german: 'antworten', english: 'to answer' },
+            { german: 'kaufen', english: 'to buy' },
+            { german: 'verkaufen', english: 'to sell' },
+            { german: 'öffnen', english: 'to open' },
+            { german: 'schließen', english: 'to close' },
+            { german: 'bezahlen', english: 'to pay' },
+            { german: 'lieben', english: 'to love' },
+            { german: 'hassen', english: 'to hate' },
+            { german: 'beginnen', english: 'to begin' },
+            { german: 'enden', english: 'to end' },
+            { german: 'warten', english: 'to wait' },
+            { german: 'bringen', english: 'to bring' },
+            { german: 'nehmen', english: 'to take' },
+            { german: 'bleiben', english: 'to stay' },
+            { german: 'aufstehen', english: 'to get up' },
+            { german: 'einschlafen', english: 'to fall asleep' },
+            { german: 'aufwachen', english: 'to wake up' },
+            { german: 'anrufen', english: 'to call (on the phone)' },
+            { german: 'einkaufen', english: 'to shop' },
+            { german: 'fernsehen', english: 'to watch TV' },
+            { german: 'mitbringen', english: 'to bring along' },
+            { german: 'mitkommen', english: 'to come along' },
+            { german: 'ausgehen', english: 'to go out' },
+            { german: 'einladen', english: 'to invite' },
+            { german: 'abholen', english: 'to pick up' },
+            { german: 'vorstellen', english: 'to introduce' },
+            { german: 'vergessen', english: 'to forget' },
+            { german: 'erinnern (sich)', english: 'to remember' },
+            { german: 'passieren', english: 'to happen' },
+            { german: 'regnen', english: 'to rain' },
+            { german: 'schneien', english: 'to snow' },
+            { german: 'scheinen', english: 'to shine' },
+            { german: 'kosten', english: 'to cost' },
+            { german: 'dauern', english: 'to last' },
+            { german: 'fehlen', english: 'to be missing' },
+            { german: 'gratulieren', english: 'to congratulate' },
+            { german: 'unterschreiben', english: 'to sign' },
+            { german: 'unterscheiden', english: 'to distinguish' },
+            { german: 'vergleichen', english: 'to compare' },
+            { german: 'entscheiden', english: 'to decide' },
+            { german: 'planen', english: 'to plan' },
+            { german: 'organisieren', english: 'to organize' },
+            { german: 'reparieren', english: 'to repair' },
+            { german: 'benutzen', english: 'to use' },
+            { german: 'brauchen', english: 'to need' },
+            { german: 'haben', english: 'to have' },
+            { german: 'sein', english: 'to be' },
+            { german: 'werden', english: 'to become' },
+            { german: 'gehen', english: 'to go' },
+            { german: 'kommen', english: 'to come' },
+            { german: 'machen', english: 'to make / do' },
+            { german: 'sprechen', english: 'to speak' },
+            { german: 'sehen', english: 'to see' },
+            { german: 'hören', english: 'to hear' },
+            { german: 'essen', english: 'to eat' },
+            { german: 'trinken', english: 'to drink' },
+            { german: 'schlafen', english: 'to sleep' },
+            { german: 'leben', english: 'to live' },
+            { german: 'arbeiten', english: 'to work' },
+            { german: 'lernen', english: 'to learn' },
+            { german: 'fragen', english: 'to ask' },
+            { german: 'antworten', english: 'to answer' },
+            { german: 'kaufen', english: 'to buy' },
+            { german: 'verkaufen', english: 'to sell' },
+            { german: 'öffnen', english: 'to open' },
+            { german: 'schließen', english: 'to close' },
+            { german: 'bezahlen', english: 'to pay' },
+            { german: 'lieben', english: 'to love' },
+            { german: 'hassen', english: 'to hate' },
+            { german: 'beginnen', english: 'to begin' },
+            { german: 'enden', english: 'to end' },
+            { german: 'warten', english: 'to wait' },
+            { german: 'bringen', english: 'to bring' },
+            { german: 'nehmen', english: 'to take' },
+            { german: 'bleiben', english: 'to stay' },
+            { german: 'aufstehen', english: 'to get up' },
+            { german: 'einschlafen', english: 'to fall asleep' },
+            { german: 'aufwachen', english: 'to wake up' },
+            { german: 'anrufen', english: 'to call (on the phone)' },
+            { german: 'einkaufen', english: 'to shop' },
+            { german: 'fernsehen', english: 'to watch TV' },
+            { german: 'mitbringen', english: 'to bring along' },
+            { german: 'mitkommen', english: 'to come along' },
+            { german: 'ausgehen', english: 'to go out' },
+            { german: 'einladen', english: 'to invite' },
+            { german: 'abholen', english: 'to pick up' },
+            { german: 'vorstellen', english: 'to introduce' },
+            { german: 'vergessen', english: 'to forget' },
+            { german: 'erinnern (sich)', english: 'to remember' },
+            { german: 'passieren', english: 'to happen' },
+            { german: 'regnen', english: 'to rain' },
+            { german: 'schneien', english: 'to snow' },
+            { german: 'scheinen', english: 'to shine' },
+            { german: 'kosten', english: 'to cost' },
+            { german: 'dauern', english: 'to last' },
+            { german: 'fehlen', english: 'to be missing' },
+            { german: 'gratulieren', english: 'to congratulate' },
+            { german: 'unterschreiben', english: 'to sign' },
+            { german: 'unterscheiden', english: 'to distinguish' },
+            { german: 'vergleichen', english: 'to compare' },
+            { german: 'entscheiden', english: 'to decide' },
+            { german: 'planen', english: 'to plan' },
+            { german: 'organisieren', english: 'to organize' },
+            { german: 'reparieren', english: 'to repair' },
+            { german: 'benutzen', english: 'to use' },
+        ];
+
+        // Global variables for quiz state
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let quizQuestions = [];
+        let canProceedToNextQuestion = false; // Flag to control progression after an answer
+
+        // Get references to HTML elements
+        const mainMenu = document.getElementById('main-menu');
+        const vocabularyView = document.getElementById('vocabulary-view');
+        const quizView = document.getElementById('quiz-view');
+        const scoreView = document.getElementById('score-view');
+        
+        const vocabularyList = document.getElementById('vocabulary-list');
+        const scoreEl = document.getElementById('score');
+        const questionCounterEl = document.getElementById('question-counter');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const quizWordEl = document.getElementById('quiz-word');
+        const optionsContainer = document.getElementById('options-container');
+        const finalScoreEl = document.getElementById('final-score');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+
+        // --- View Navigation Functions ---
+
+        /**
+         * Hides all main application views and displays the specified view.
+         * @param {HTMLElement} view - The HTML element representing the view to be shown.
+         */
+        function showView(view) {
+            mainMenu.classList.add('hidden');
+            vocabularyView.classList.add('hidden');
+            quizView.classList.add('hidden');
+            scoreView.classList.add('hidden');
+            view.classList.remove('hidden');
+        }
+
+        /**
+         * Displays the main menu view.
+         */
+        function showMenu() {
+            showView(mainMenu);
+        }
+
+        /**
+         * Populates the vocabulary list table and displays the vocabulary view.
+         * The vocabulary list is sorted alphabetically by the German word.
+         */
+        function showVocabulary() {
+            let html = '';
+            // Create a sorted copy of the vocabulary array to display alphabetically
+            const sortedVocab = [...vocabulary].sort((a, b) => a.german.localeCompare(b.german));
+            sortedVocab.forEach(word => {
+                html += `
+                    <tr>
+                        <td class="py-3 px-4 text-gray-900 font-medium">${word.german}</td>
+                        <td class="py-3 px-4 text-gray-600">${word.english}</td>
+                    </tr>
+                `;
+            });
+            vocabularyList.innerHTML = html; // Inject the generated HTML into the table body
+            showView(vocabularyView); // Show the vocabulary view
+        }
+
+        // --- Quiz Logic Functions ---
+
+        /**
+         * Initializes the quiz state, selects random questions, and starts the quiz.
+         */
+        function startQuiz() {
+            currentQuestionIndex = 0; // Reset question index
+            score = 0; // Reset score
+            scoreEl.textContent = score; // Update score display
+            // Select 10 random unique questions from the full vocabulary list
+            quizQuestions = [...vocabulary].sort(() => 0.5 - Math.random()).slice(0, 10); 
+            totalQuestionsEl.textContent = quizQuestions.length; // Display total questions
+            showView(quizView); // Show the quiz view
+            loadQuestion(); // Load the first question
+        }
+
+        /**
+         * Loads the current question based on `currentQuestionIndex`.
+         * If all questions are answered, it shows the final score.
+         */
+        function loadQuestion() {
+            // Reset the flag allowing progression to the next question
+            canProceedToNextQuestion = false;
+            // Hide the "Next Question" button when a new question loads
+            nextQuestionBtn.classList.add('hidden');
+
+            if (currentQuestionIndex >= quizQuestions.length) {
+                showScore(); // End of quiz, show score
+                return;
+            }
+
+            questionCounterEl.textContent = currentQuestionIndex + 1; // Update question counter
+            optionsContainer.innerHTML = ''; // Clear previous answer options
+
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+            quizWordEl.textContent = currentQuestion.german; // Display the German word
+
+            const options = generateOptions(currentQuestion.english); // Generate answer options
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                // Add Tailwind CSS classes for styling and responsiveness
+                button.classList.add(
+                    'btn', 'option-btn', 'w-full', 'p-4', 'border-2', 'rounded-lg', 'text-lg', 
+                    'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2', 'focus:ring-blue-500', 
+                    'hover:bg-gray-100', 'text-gray-800', 'border-gray-300'
+                );
+                // Attach click event listener to check the answer
+                button.onclick = () => checkAnswer(option, currentQuestion.english, button);
+                optionsContainer.appendChild(button); // Add button to options container
+            });
+        }
+
+        /**
+         * Generates 4 unique answer options, including the correct answer.
+         * It picks 3 random incorrect answers from the full vocabulary list.
+         * @param {string} correctAnswer - The correct English translation for the current question.
+         * @returns {string[]} An array of shuffled answer options.
+         */
+        function generateOptions(correctAnswer) {
+            let options = [correctAnswer];
+            // Loop until 4 unique options are collected
+            while (options.length < 4) {
+                const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)].english;
+                // Ensure the random word is not the correct answer and not already in the options array
+                if (randomWord !== correctAnswer && !options.includes(randomWord)) {
+                    options.push(randomWord);
+                }
+            }
+            // Shuffle the options array to randomize their display order
+            return options.sort(() => 0.5 - Math.random());
+        }
+
+        /**
+         * Checks the selected answer against the correct answer.
+         * Updates the score, highlights the options (correct/incorrect),
+         * disables all options, and shows the "Next Question" button.
+         * @param {string} selectedOption - The English translation chosen by the user.
+         * @param {string} correctAnswer - The actual correct English translation.
+         * @param {HTMLButtonElement} clickedButton - The button element that was clicked by the user.
+         */
+        function checkAnswer(selectedOption, correctAnswer, clickedButton) {
+            const allOptionButtons = optionsContainer.querySelectorAll('.option-btn');
+            // Disable all option buttons to prevent further clicks for the current question
+            allOptionButtons.forEach(btn => {
+                btn.disabled = true; 
+                btn.classList.remove('hover:bg-gray-100'); // Remove hover effect once an answer is chosen
+
+                // Highlight the correct answer in green
+                if (btn.textContent === correctAnswer) {
+                    btn.classList.add('correct');
+                } 
+                // If the clicked button was incorrect, highlight it in red
+                else if (btn === clickedButton) {
+                    btn.classList.add('incorrect');
+                }
+            });
+
+            // Increment score if the selected option is correct
+            if (selectedOption === correctAnswer) {
+                score++;
+                scoreEl.textContent = score; // Update score display
+            }
+            
+            // Allow the user to proceed to the next question
+            canProceedToNextQuestion = true;
+            nextQuestionBtn.classList.remove('hidden'); // Show the "Next Question" button
+        }
+        
+        /**
+         * Advances the quiz to the next question. This function is called by the "Next Question" button.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++; // Increment question index
+            loadQuestion(); // Load the next question
+        }
+
+        /**
+         * Displays the final score screen at the end of the quiz.
+         */
+        function showScore() {
+            finalScoreEl.textContent = `${score} / ${quizQuestions.length}`; // Display final score
+            showView(scoreView); // Show the score view
+        }
+        
+        // --- Event Listener for Keyboard Input ---
+        /**
+         * Listens for the 'keydown' event globally. If the Enter key is pressed
+         * and the user is in the quiz view and has already answered the current question,
+         * it automatically advances to the next question.
+         */
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && canProceedToNextQuestion && !quizView.classList.contains('hidden')) {
+                nextQuestion(); // Call nextQuestion() to proceed
+            }
+        });
+
+        // Initial call to set up the application and show the main menu when the page loads
+        showMenu();
+
+    </script>
+</body>
+</html>
